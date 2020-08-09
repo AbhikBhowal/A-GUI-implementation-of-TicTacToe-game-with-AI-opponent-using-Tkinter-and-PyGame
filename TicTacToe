@@ -1,0 +1,365 @@
+from tkinter import *
+import tkinter.messagebox
+import tkinter.font as font
+import pygame #For button click sound
+import random
+#VARIABLES
+turn=1
+show=" "
+x_player=[]
+o_player=[]
+board= ["none"] * 10
+player1_result=0
+player2_result=0
+gameMode=1
+availableMove=[]
+
+
+
+#CREATE WINDOW, TITLE & ICON
+tk = Tk()
+window_width=430
+window_height=650
+x_coordinate=((tk.winfo_screenwidth()//2)-(window_width//2))
+y_coordinate=((tk.winfo_screenheight()//2)-(window_height//2))
+tk.geometry("+%d+%d" % (x_coordinate,y_coordinate))
+tk.title("Tic Tac Toe Game    v4.0")
+tk.configure(bg='white')
+tk.iconbitmap("D:\\Python World\\TicTacToe\\tic_tac_toe_game_grey_npq_icon.ico")
+
+#PLAYER LEBEL
+label1 = Label( tk, text="Player 1-X:", font='Times 15', bg='white' , fg='black',  height=1, width=8)
+label1.grid(row=1, column=1, sticky='snew')
+
+label2 = Label( tk, text="Player 2-O:", font='Times 15', bg='white', fg='black', height=1, width=8)
+label2.grid(row=2, column=1, sticky='snew')
+
+GameTitle = Label( tk, text="TicTacToe", relief=GROOVE, font='Helvetica 20 bold', bg='white', fg='black', height=1, width=8)
+GameTitle.grid(row=1, column=0, sticky='snew')
+
+GameModeDisplay = Label( tk, text="1 vs 2", font='Times 15', bg='white', fg='black', height=1, width=8)
+GameModeDisplay.grid(row=2, column=0)
+
+#RESULT LEBEL
+label1score = Label( tk, text="0", font='Times 20', bg='white' , fg='black',  height=1, width=8)
+label1score.grid(row=1, column=2)
+
+label2score = Label( tk, text="0", font='Times 20', bg='white', fg='black', height=1, width=8)
+label2score.grid(row=2, column=2)
+button=[]
+
+#BUTTONS
+button1 = Button(tk, text=" ", font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button1,1), sound()])
+button1.grid(row=3, column=0)
+
+button2 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button2,2), sound()])
+button2.grid(row=3, column=1)
+
+button3 = Button(tk, text=' ',font='Times 20 bold', borderwidth=5,  bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button3,3), sound()])
+button3.grid(row=3, column=2)
+
+button4 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button4,4), sound()])
+button4.grid(row=4, column=0)
+
+button5 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button5,5), sound()])
+button5.grid(row=4, column=1)
+
+button6 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button6,6), sound()])
+button6.grid(row=4, column=2)
+
+button7 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button7,7), sound()])
+button7.grid(row=5, column=0)
+
+button8 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button8,8), sound()])
+button8.grid(row=5, column=1)
+
+button9 = Button(tk, text=' ', font='Times 20 bold', borderwidth=5, bg='#3b9dff', fg='white', height=4, width=8, command=lambda: [btnClick(button9,9), sound()])
+button9.grid(row=5, column=2)
+
+buttonReset = Button(tk, text="Reset", font='Times 12 bold', bg='Red', fg='white', height=1, width=8, command=lambda: [ResetGame(), sound()])
+buttonReset.grid(row=6, column=1, sticky='snew')
+
+NewGame = Button(tk, text="New Game", font='Times 12 bold', bg='WHITE', fg='BLACK', height=1, width=8, command=lambda: [NewGame(), sound()])
+NewGame.grid(row=6, column=0, sticky='snew')
+
+GameMode = Button(tk, text="GameMode", font='Times 12 bold', bg='WHITE', fg='BLACK', height=1, width=8, command=lambda: [gameFunc(), sound()])
+GameMode.grid(row=6, column=2, sticky='snew')
+
+
+#BUTTON CLICK
+def btnClick(button, b):
+    global board,gameMode, availableMove
+    flag= False
+
+    if(gameMode%2!=0):
+        HumanPlayer(button, b)
+
+    elif(gameMode%2==0): #AI MODE
+        versusAI(button, b)
+
+def HumanPlayer(button, b):
+    global turn,board,gameMode
+
+    if turn%2!=0 and board[b]=='none':
+        button["text"]="X"
+        button['bg']= 'RED'
+        button['relief']=SUNKEN
+        board[b]="x"
+        #flag=True
+        turn=turn+1
+        r=checkForWin(board)
+        displayResult(r)
+        print("after X " ,r)
+
+    elif turn%2==0 and board[b]=='none':
+        button["text"]="O"
+        button['bg']= 'GREEN'
+        button['relief']=SUNKEN
+        board[b]="o"
+        turn=turn+1
+        r=checkForWin(board)
+        displayResult(r)
+        print("after O " ,r)
+    elif board[b]=='x' or board[b]=='o':
+        tkinter.messagebox.showinfo("Tic-Tac-Toe", "The place is already Occupied!")
+    else:
+        pass
+
+def versusAI(button, b):
+    global turn, board,gameMode, availableMove
+    if turn%2!=0 and board[b]=='none':
+        button["text"]="X"
+        button['bg']= 'RED'
+        button['relief']=SUNKEN
+        board[b]="x"
+        r=checkForWin(board)
+        displayResult(r)
+        if r==1:
+            return 0
+        turn=turn+1
+    elif board[b]=='x' or board[b]=='o':
+        tkinter.messagebox.showinfo("Tic-Tac-Toe", "The place is already Occupied!")
+        return 0
+
+
+    if turn%2==0:
+        availableMove.clear()
+        for i in range(1,10):
+            if(board[i]=='none'):
+                availableMove.append(i)
+        if(len(availableMove)==0):
+            tkinter.messagebox.showinfo("Result", "It's a draw")
+            return 0
+        c=moveAI(availableMove)
+        board[c]="o"
+        if c==1:
+            button1["text"]="O"
+            button1['bg']= 'GREEN'
+            button1['relief']=SUNKEN
+        elif c==2:
+            button2["text"]="O"
+            button2['bg']= 'GREEN'
+            button2['relief']=SUNKEN
+        elif c==3:
+            button3["text"]="O"
+            button3['bg']= 'GREEN'
+            button3['relief']=SUNKEN
+        elif c==4:
+            button4["text"]="O"
+            button4['bg']= 'GREEN'
+            button4['relief']=SUNKEN
+        elif c==5:
+            button5["text"]="O"
+            button5['bg']= 'GREEN'
+            button5['relief']=SUNKEN
+        elif c==6:
+            button6["text"]="O"
+            button6['bg']= 'GREEN'
+            button6['relief']=SUNKEN
+        elif c==7:
+            button7["text"]="O"
+            button7['bg']= 'GREEN'
+            button7['relief']=SUNKEN
+        elif c==8:
+            button8["text"]="O"
+            button8['bg']= 'GREEN'
+            button8['relief']=SUNKEN
+        elif c==9:
+            button9["text"]="O"
+            button9['bg']= 'GREEN'
+            button9['relief']=SUNKEN
+
+        elif(board[b]=='x' or board[b]=='o'):
+            tkinter.messagebox.showinfo("Tic-Tac-Toe", "The place is already Occupied!")
+        turn=turn+1
+        print(board)
+        r=checkForWin(board)
+        displayResult(r)
+
+def moveAI(availableMove):
+    global board
+    table=board.copy()
+    print("copy ", table)
+    for location in availableMove:
+        table[location]='o'
+        r=checkForWin(table)
+        if(r==2):
+            return location
+        table[location]='none'
+    for location in availableMove:
+        table[location]='x'
+        r=checkForWin(table)
+        if(r==1):
+            return location
+        table[location]='none'
+    if 5 in availableMove:
+        return 5
+    return random.choice(availableMove)
+
+
+#BUTTON CLICK SOUND
+pygame.mixer.init()  #Initializing the mixer
+def sound():
+    pygame.mixer.music.load("D:\Python World\TicTacToe\mouse_click.mp3");
+    pygame.mixer.music.play()
+
+
+#RESET
+def ResetGame():
+    global turn,board
+    button1["text"] = " "
+    button2["text"] = " "
+    button3["text"] = " "
+    button4["text"] = " "
+    button5["text"] = " "
+    button6["text"] = " "
+    button7["text"] = " "
+    button8["text"] = " "
+    button9["text"] = " "
+
+    button1["bg"] = "Steel Blue"
+    button2["bg"] = "Steel Blue"
+    button3["bg"] = "Steel Blue"
+    button4["bg"] = "Steel Blue"
+    button5["bg"] = "Steel Blue"
+    button6["bg"] = "Steel Blue"
+    button7["bg"] = "Steel Blue"
+    button8["bg"] = "Steel Blue"
+    button9["bg"] = "Steel Blue"
+
+    button1["relief"] = RAISED
+    button2["relief"] = RAISED
+    button3["relief"] = RAISED
+    button4["relief"] = RAISED
+    button5["relief"] = RAISED
+    button6["relief"] = RAISED
+    button7["relief"] = RAISED
+    button8["relief"] = RAISED
+    button9["relief"] = RAISED
+    turn=1
+    board=["none"]*10
+    enableButton()
+
+
+#NEW GAME
+def NewGame():
+    global player1_result,player2_result,gameMode
+    ResetGame()
+    gameFunc()
+    player1_result=0;
+    player2_result=0;
+    label1score["text"]="0"
+    label2score["text"]="0"
+    gameMode=1
+
+
+#DISABLE BUTTONS
+def disableButton():
+    button1.configure(state=DISABLED)
+    button2.configure(state=DISABLED)
+    button3.configure(state=DISABLED)
+    button4.configure(state=DISABLED)
+    button5.configure(state=DISABLED)
+    button6.configure(state=DISABLED)
+    button7.configure(state=DISABLED)
+    button8.configure(state=DISABLED)
+    button9.configure(state=DISABLED)
+
+
+#ENABLE BUTTONS
+def enableButton():
+    button1.configure(state=NORMAL)
+    button2.configure(state=NORMAL)
+    button3.configure(state=NORMAL)
+    button4.configure(state=NORMAL)
+    button5.configure(state=NORMAL)
+    button6.configure(state=NORMAL)
+    button7.configure(state=NORMAL)
+    button8.configure(state=NORMAL)
+    button9.configure(state=NORMAL)
+
+
+#WINNER DETERMINATOR
+def checkForWin(board):
+    global player1_result, player2_result
+    if (board[1]=='x' and board[2]=='x' and board[3]=='x' or
+        board[4]=='x' and board[5]=='x' and board[6]=='x' or
+        board[7]=='x' and board[8]=='x' and board[9]=='x' or
+        board[1]=='x' and board[4]=='x' and board[7]=='x' or
+        board[2]=='x' and board[5]=='x' and board[8]=='x' or
+        board[3]=='x' and board[6]=='x' and board[9]=='x' or
+        board[1]=='x' and board[5]=='x' and board[9]=='x' or
+        board[3]=='x' and board[5]=='x' and board[7]=='x') :
+
+        return 1
+
+    elif(board[1]=='o' and board[2]=='o' and board[3]=='o' or
+        board[4]=='o' and board[5]=='o' and board[6]=='o' or
+        board[7]=='o' and board[8]=='o' and board[9]=='o' or
+        board[1]=='o' and board[4]=='o' and board[7]=='o' or
+        board[2]=='o' and board[5]=='o' and board[8]=='o' or
+        board[3]=='o' and board[6]=='o' and board[9]=='o' or
+        board[1]=='o' and board[5]=='o' and board[9]=='o' or
+        board[3]=='o' and board[5]=='o' and board[7]=='o') :
+
+        return 2
+
+    elif(turn==10):
+        return 0
+    else:
+        pass
+
+
+def displayResult(result):
+    global player1_result,player2_result
+    if(result==1):
+        player1_result=player1_result+1
+        label1score["text"]=str(player1_result)
+        tkinter.messagebox.showinfo("Result", "Player 1 is the winner")
+        disableButton()
+
+    elif(result==2):
+        player2_result=player2_result+1
+        label2score["text"]=str(player2_result)
+        tkinter.messagebox.showinfo("Result", "Player 2 is the winner")
+        disableButton()
+    elif(result==0):
+        tkinter.messagebox.showinfo("Result", "It's a draw")
+        disableButton()
+    else:
+        pass
+
+def gameFunc():
+    global gameMode
+    gameMode=gameMode+1
+    if(gameMode%2==0):
+        #aiMove()
+        GameModeDisplay["text"]='1 vs AI:'
+        label2['text']='Player AI-O:'
+    else:
+        #humanMove()
+        GameModeDisplay["text"]='1 vs 2:'
+        label2['text']='Player 2-O:'
+
+
+tk.mainloop()
